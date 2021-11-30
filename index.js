@@ -5,6 +5,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
+var MongoClient = require('mongodb').MongoClient;
+var url = "mongodb://localhost:27017/";
+
+
 let fp = path.join(__dirname,"public", "db.json");
 
 console.log(fp);
@@ -27,60 +31,22 @@ app.use(cors({
 }));
 
 app.get('/', function (req,res) {
-      res.sendFile(fp);
+      //res.sendFile(fp);
+      MongoClient.connect(url, function(err, db) {
+        if (err) throw err;
+        var dbo = db.db("bookDB");
+        var mysort = { id: 1 };
+        dbo.collection("books").find().toArray(function(error, result) {
+          if (error) throw error;
+            console.log(result);
+           res.send(result);
+          db.close();
+        });
+      });
   });
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
   });
-
-/*const server= http.createServer((req, res) => {
-    // Write response
-
-    let fp= path.join(__dirname,"public", "sample.json");
-
-    console.log(fp);
-
-    let extension = path.extname(fp);
-    console.log(extension);
-
-
-   if(req.url==='/api'){
-        fs.readFile(path.join(__dirname,'public','db.json'),(err,content)=>{
-            if (err) throw err;
-            res.writeHead(200,{'Content-Type':'application/json'})
-            res.end(content);
-        });
-    }
-
-
-
-
-});
-  
-const PORT =process.env.PORT || 3000
-server.listen(PORT, () => console.log('Server running...'));
-
-*/
-
-/*console.log("Server App");
-var express = require("express");
-var mongoServer = require("./database")
-
-// Connecting to database
-
-const dburl = 'mongodb://localhost:27017';
-const dbname = 'bookDB';
-const collname = 'books';
-
-
-var app = express();
-
-
-app.get('/', (req, res) => res.send(mongoServer.mongoConnect()))
-
-// Start the Express server
-app.listen(3000, () => console.log('Server running on port 3000!'));  
-*/
 
